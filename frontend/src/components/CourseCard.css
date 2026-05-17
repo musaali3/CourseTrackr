@@ -1,0 +1,147 @@
+.course-card {
+  background: linear-gradient(135deg, #1a1a1a 0%, #151515 100%);
+  border: 1px solid #252525;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.course-card:hover {
+  border-color: #333;
+}
+
+.course-card.expanded {
+  border-color: #10b981;
+}
+
+.course-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.course-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.course-icon {
+  background: #252525;
+  padding: 0.625rem;
+  border-radius: 10px;
+  color: #10b981;
+}
+
+.course-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.course-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f5f5f5;
+}
+
+.course-credits {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.course-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.course-grade {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.grade-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.grade-letter {
+  font-size: 0.875rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.no-grade {
+  font-size: 0.875rem;
+  color: #555;
+}
+
+.course-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  background: #2a1515;
+  color: #ef4444;
+}
+
+.delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.expand-btn {
+  background: #252525;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.expand-btn:hover {
+  background: #333;
+  color: #f5f5f5;
+}
+
+.course-card-content {
+  border-top: 1px solid #252525;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: #141414;
+}
+
+@media (max-width: 640px) {
+  .course-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .course-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
