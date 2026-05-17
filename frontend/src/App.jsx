@@ -5,7 +5,7 @@ import CourseInput from './components/CourseInput.jsx'
 import CourseList from './components/CourseList.jsx'
 import './App.css'
 
-const API_URL = 'http://127.0.0.1:5000'
+const API_URL = 'https://coursetrackr-backend.onrender.com'
 
 function App() {
   const [courses, setCourses] = useState([])
