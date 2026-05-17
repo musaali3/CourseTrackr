@@ -10,6 +10,8 @@ GradeTrackr allows users to create courses, add assessments with grades and weig
 
 The goal of this project was to practice full-stack development while also building something useful for students who want a more personalized and persistent grade tracking tool.
 
+Visit the application: https://course-trackr.vercel.app/ 
+
 ## Features
 
 - Add and delete courses
