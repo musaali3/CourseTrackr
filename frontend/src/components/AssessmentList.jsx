@@ -1,7 +1,7 @@
 import AssessmentItem from './AssessmentItem.jsx'
 import './AssessmentList.css'
 
-function AssessmentList({ assessments, courseId, apiUrl, onAssessmentDeleted }) {
+function AssessmentList({ assessments, courseId, apiUrl, userKey, onAssessmentDeleted }) {
   if (assessments.length === 0) {
     return (
       <div className="assessment-list-empty">
@@ -27,6 +27,7 @@ function AssessmentList({ assessments, courseId, apiUrl, onAssessmentDeleted }) 
           assessment={assessment}
           courseId={courseId}
           apiUrl={apiUrl}
+          userKey={userKey}
           onDeleted={onAssessmentDeleted}
         />
       ))}

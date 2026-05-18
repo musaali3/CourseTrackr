@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Trash2, Loader2 } from 'lucide-react'
 import './AssessmentItem.css'
 
-function AssessmentItem({ assessment, courseId, apiUrl, onDeleted }) {
+function AssessmentItem({ assessment, courseId, apiUrl, userKey, onDeleted }) {
   const [deleting, setDeleting] = useState(false)
 
   const handleDelete = async () => {
@@ -13,6 +13,9 @@ function AssessmentItem({ assessment, courseId, apiUrl, onDeleted }) {
         `${apiUrl}/courses/${courseId}/assessments/${assessment.id}`,
         {
           method: 'DELETE',
+          headers: {
+            'X-User-Key': userKey,
+          },
         }
       )
 

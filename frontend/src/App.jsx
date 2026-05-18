@@ -7,6 +7,19 @@ import './App.css'
 
 const API_URL = 'https://coursetrackr-backend.onrender.com'
 
+function getUserkey() {
+  let userKey = localStorage.getItem('gradetrackr_user_key')
+
+  if (!userKey) {
+    userKey = crypto.randomUUID()
+    localStorage.setItem('gradetrackr_user_key', userKey)
+  }
+
+  return userKey
+}
+
+const USER_KEY = getUserkey()
+
 function App() {
   const [courses, setCourses] = useState([])
   const [gpaData, setGpaData] = useState(null)
@@ -15,7 +28,11 @@ function App() {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${API_URL}/courses`)
+      const response = await fetch(`${API_URL}/courses`, {
+        headers: {
+          'X-User-Key': USER_KEY,
+        },
+      })
       if (!response.ok) throw new Error('Failed to fetch courses')
       const data = await response.json()
       setCourses(data)
@@ -26,7 +43,11 @@ function App() {
 
   const fetchGpa = async () => {
     try {
-      const response = await fetch(`${API_URL}/gpa`)
+      const response = await fetch(`${API_URL}/gpa`, {
+        headers: {
+          'X-User-Key': USER_KEY,
+        },
+      })
 
       if (response.status === 404) {
         setGpaData(null)
@@ -99,12 +120,14 @@ function App() {
             
             <CourseInput 
               apiUrl={API_URL} 
+              userKey={USER_KEY}
               onCourseAdded={handleCourseAdded} 
             />
             
             <CourseList 
               courses={courses} 
               apiUrl={API_URL}
+              userKey={USER_KEY}
               onCourseDeleted={handleCourseDeleted}
               onAssessmentChange={handleAssessmentChange}
             />

@@ -2,32 +2,46 @@ from flask import request, jsonify
 from config import app, db
 from models import Course, Assessment
 
+# helper functions
+def get_user_key():
+    return request.headers.get("X-User-Key")
+
 # Courses
 @app.route("/courses", methods=['GET'])
 def get_courses():
-    courses = Course.query.all()
+    user_key = get_user_key()
+
+    if not user_key:
+        return jsonify({"error": "Missing user key."}), 400
+
+    courses = Course.query.filter_by(user_key=user_key).all()
 
     course_lst = []
     for c in courses:
         course_json = c.convert_to_json()
         course_lst.append(course_json)
-    
+
     return jsonify(course_lst), 200
 
 @app.route("/courses", methods=['POST'])
 def create_courses():
+    user_key = get_user_key()
+
+    if not user_key:
+        return jsonify({"error": "Missing user key."}), 400
+
     user_data = request.get_json(silent=True) or {}
     course_name = user_data.get("name")
 
     if not course_name or not isinstance(course_name, str):
         return jsonify({"error": "Course 'name' is required and must be a string."}), 400
-    
-    exists = Course.query.filter_by(name=course_name).first()
+
+    exists = Course.query.filter_by(name=course_name, user_key=user_key).first()
 
     if exists:
         return jsonify({"error": "A course with that name already exists."}), 409
-    
-    course = Course(name=course_name)
+
+    course = Course(name=course_name, user_key=user_key)
     db.session.add(course)
     db.session.commit()
 
@@ -35,12 +49,23 @@ def create_courses():
 
 @app.route("/courses/<int:id>", methods=['GET'])
 def get_course(id):
-    course = db.get_or_404(Course, id)
+    user_key = get_user_key()
+
+    if not user_key:
+        return jsonify({"error": "Missing user key."}), 400
+
+    course = Course.query.filter_by(id=id, user_key=user_key).first_or_404()
     return jsonify(course.convert_to_json()), 200
 
 @app.route("/courses/<int:id>", methods=['DELETE'])
 def delete_course(id):
-    course = db.get_or_404(Course, id)
+    user_key = get_user_key()
+
+    if not user_key:
+        return jsonify({"error": "Missing user key."}), 400
+
+    course = Course.query.filter_by(id=id, user_key=user_key).first_or_404()
+
     db.session.delete(course)
     db.session.commit()
 
@@ -49,13 +74,27 @@ def delete_course(id):
 # Assessments
 @app.route("/courses/<int:id>/assessments", methods=["GET"])
 def get_assessments(id):
-    db.get_or_404(Course, id)
-    assessments = Assessment.query.filter_by(course_id=id).all()
+    user_key = get_user_key()
+
+    if not user_key:
+        return jsonify({"error": "Missing user key."}), 400
+
+    course = Course.query.filter_by(id=id, user_key=user_key).first_or_404()
+
+    assessments = Assessment.query.filter_by(course_id=course.id).all()
+
     return jsonify([a.convert_to_json() for a in assessments]), 200
+
 
 @app.route("/courses/<int:id>/assessments", methods=['POST'])
 def create_assessment(id):
-    db.get_or_404(Course, id)
+    user_key = get_user_key()
+
+    if not user_key:
+        return jsonify({"error": "Missing user key."}), 400
+
+    course = Course.query.filter_by(id=id, user_key=user_key).first_or_404()
+
     data = request.get_json(silent=True) or {}
 
     name = data.get('name')
@@ -64,41 +103,60 @@ def create_assessment(id):
 
     if not name or not isinstance(name, str):
         return jsonify({"error": "'name' is required and must be a string."}), 400
+
     if grade is None or not isinstance(grade, (int, float)):
         return jsonify({"error": "'grade' is required and must be a number."}), 400
+
     if weight is None or not isinstance(weight, (int, float)):
         return jsonify({"error": "'weight' is required and must be a number."}), 400
-    
+
     if not (0 <= grade <= 100):
         return jsonify({"error": "'grade' must be between 0 and 100."}), 400
+
     if not (0 < weight <= 100):
-        return jsonify({"error": "'weight' must be greater than 0 but less than or eqaul to 100."}), 400
-    
+        return jsonify({"error": "'weight' must be greater than 0 but less than or equal to 100."}), 400
+
     existing_weight = db.session.query(
         db.func.sum(Assessment.weight)
-        ).filter_by(course_id=id).scalar() or 0
-    
+    ).filter_by(course_id=course.id).scalar() or 0
+
     if existing_weight + weight > 100:
         return jsonify({
             "error": f"Adding this assessment would exceed 100% total weight. "
                      f"Remaining weight available: {100 - existing_weight:.2f}%"
-        })
-    
-    assessment = Assessment(name=name, grade=grade, weight=weight, course_id=id)
+        }), 400
+
+    assessment = Assessment(
+        name=name,
+        grade=grade,
+        weight=weight,
+        course_id=course.id
+    )
+
     db.session.add(assessment)
     db.session.commit()
 
     return jsonify(assessment.convert_to_json()), 201
 
+
 @app.route("/courses/<int:course_id>/assessments/<int:assessment_id>", methods=["PUT"])
 def update_assessment(course_id, assessment_id):
-    db.get_or_404(Course, course_id)
-    assessment = db.get_or_404(Assessment, assessment_id)
+    user_key = get_user_key()
+
+    if not user_key:
+        return jsonify({"error": "Missing user key."}), 400
+
+    course = Course.query.filter_by(id=course_id, user_key=user_key).first_or_404()
+
+    assessment = Assessment.query.filter_by(
+        id=assessment_id,
+        course_id=course.id
+    ).first_or_404()
 
     data = request.get_json(silent=True) or {}
 
     if "name" in data:
-        if not isinstance(data['name'], str) or not data['name']:
+        if not isinstance(data["name"], str) or not data["name"]:
             return jsonify({"error": "'name' must be a non-empty string."}), 400
         assessment.name = data["name"]
 
@@ -106,32 +164,43 @@ def update_assessment(course_id, assessment_id):
         if not isinstance(data["grade"], (int, float)) or not (0 <= data["grade"] <= 100):
             return jsonify({"error": "'grade' must be a number between 0 and 100."}), 400
         assessment.grade = data["grade"]
- 
+
     if "weight" in data:
         if not isinstance(data["weight"], (int, float)) or not (0 < data["weight"] <= 100):
             return jsonify({"error": "'weight' must be a number between 0 and 100."}), 400
 
-    other_weight = db.session.query(
+        other_weight = db.session.query(
             db.func.sum(Assessment.weight)
         ).filter(
-            Assessment.course_id == course_id,
+            Assessment.course_id == course.id,
             Assessment.id != assessment_id
         ).scalar() or 0
 
-    if other_weight + data["weight"] > 100:
-        return jsonify({
-            "error": f"Weight would exceed 100%. Available: {100 - other_weight:.2f}%"
-        }), 400
+        if other_weight + data["weight"] > 100:
+            return jsonify({
+                "error": f"Weight would exceed 100%. Available: {100 - other_weight:.2f}%"
+            }), 400
 
-    assessment.weight = data["weight"]
- 
+        assessment.weight = data["weight"]
+
     db.session.commit()
+
     return jsonify(assessment.convert_to_json()), 200
+
 
 @app.route("/courses/<int:course_id>/assessments/<int:assessment_id>", methods=["DELETE"])
 def delete_assessment(course_id, assessment_id):
-    db.get_or_404(Course, course_id)
-    assessment = db.get_or_404(Assessment, assessment_id)
+    user_key = get_user_key()
+
+    if not user_key:
+        return jsonify({"error": "Missing user key."}), 400
+
+    course = Course.query.filter_by(id=course_id, user_key=user_key).first_or_404()
+
+    assessment = Assessment.query.filter_by(
+        id=assessment_id,
+        course_id=course.id
+    ).first_or_404()
 
     db.session.delete(assessment)
     db.session.commit()
@@ -197,7 +266,12 @@ def get_course_grade(id):
 @app.route("/gpa", methods=["GET"])
 def get_gpa():
     """Return overall GPA across all courses that have at least one assessment."""
-    courses = Course.query.all()
+    user_key = get_user_key()
+
+    if not user_key:
+        return jsonify({"error": "Missing user key."}), 400
+
+    courses = Course.query.filter_by(user_key=user_key).all()
     course_results = []
  
     for course in courses:

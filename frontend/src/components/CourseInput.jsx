@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Plus, Loader2 } from 'lucide-react'
 import './CourseInput.css'
 
-function CourseInput({ apiUrl, onCourseAdded }) {
+function CourseInput({ apiUrl, userKey, onCourseAdded }) {
   const [name, setName] = useState('')
   const [credits, setCredits] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,7 +28,10 @@ function CourseInput({ apiUrl, onCourseAdded }) {
     try {
       const response = await fetch(`${apiUrl}/courses`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Key': userKey,
+        },
         body: JSON.stringify({ name: name.trim(), credits: creditValue }),
       })
 

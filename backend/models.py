@@ -3,7 +3,8 @@ from config import db
 class Course(db.Model):
     """Course Table"""
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    user_key = db.Column(db.String(100), nullable=False)
     assessments = db.relationship("Assessment", backref="course", cascade="all, delete-orphan")
 
     def convert_to_json(self):

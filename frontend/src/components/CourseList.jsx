@@ -1,7 +1,7 @@
 import CourseCard from './CourseCard.jsx'
 import './CourseList.css'
 
-function CourseList({ courses, apiUrl, onCourseDeleted, onAssessmentChange }) {
+function CourseList({ courses, apiUrl, userKey, onCourseDeleted, onAssessmentChange }) {
   if (courses.length === 0) {
     return (
       <div className="course-list-empty">
@@ -25,6 +25,7 @@ function CourseList({ courses, apiUrl, onCourseDeleted, onAssessmentChange }) {
           key={course.id}
           course={course}
           apiUrl={apiUrl}
+          userKey={userKey}
           onCourseDeleted={onCourseDeleted}
           onAssessmentChange={onAssessmentChange}
         />

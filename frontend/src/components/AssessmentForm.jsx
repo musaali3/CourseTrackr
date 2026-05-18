@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Plus, Loader2 } from 'lucide-react'
 import './AssessmentForm.css'
 
-function AssessmentForm({ courseId, apiUrl, onAssessmentAdded }) {
+function AssessmentForm({ courseId, apiUrl, userKey, onAssessmentAdded }) {
   const [name, setName] = useState('')
   const [grade, setGrade] = useState('')
   const [weight, setWeight] = useState('')
@@ -36,7 +36,10 @@ function AssessmentForm({ courseId, apiUrl, onAssessmentAdded }) {
     try {
       const response = await fetch(`${apiUrl}/courses/${courseId}/assessments`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json', 
+          'X-User-Key': userKey,
+        },
         body: JSON.stringify({
           name: name.trim(),
           grade: gradeValue,

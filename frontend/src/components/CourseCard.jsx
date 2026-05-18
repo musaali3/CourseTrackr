@@ -4,7 +4,7 @@ import AssessmentList from './AssessmentList.jsx'
 import AssessmentForm from './AssessmentForm.jsx'
 import './CourseCard.css'
 
-function CourseCard({ course, apiUrl, onCourseDeleted, onAssessmentChange }) {
+function CourseCard({ course, apiUrl, onCourseDeleted, userKey, onAssessmentChange }) {
   const [expanded, setExpanded] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -17,6 +17,9 @@ function CourseCard({ course, apiUrl, onCourseDeleted, onAssessmentChange }) {
     try {
       const response = await fetch(`${apiUrl}/courses/${course.id}`, {
         method: 'DELETE',
+        headers: {
+          'X-User-Key': userKey,
+        },
       })
 
       if (!response.ok) {
@@ -104,6 +107,7 @@ function CourseCard({ course, apiUrl, onCourseDeleted, onAssessmentChange }) {
           <AssessmentForm
             courseId={course.id}
             apiUrl={apiUrl}
+            userKey={userKey}
             onAssessmentAdded={onAssessmentChange}
           />
           
@@ -111,6 +115,7 @@ function CourseCard({ course, apiUrl, onCourseDeleted, onAssessmentChange }) {
             assessments={course.assessments || []}
             courseId={course.id}
             apiUrl={apiUrl}
+            userKey={userKey}
             onAssessmentDeleted={onAssessmentChange}
           />
         </div>
